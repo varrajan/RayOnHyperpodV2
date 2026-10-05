@@ -23,6 +23,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTConfig, SFTTrainer
 from datasets import load_dataset, load_from_disk
+from transformers import TrainerCallback
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -76,6 +77,18 @@ def get_quantization_config(script_args: ScriptArguments):
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
+
+
+class RayTrainReportCallback(TrainerCallback):
+    """Reports metrics and checkpoint path to Ray Train on each save."""
+
+    def on_save(self, args, state, control, **kwargs):
+        import ray.train
+        checkpoint_dir = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
+        ray.train.report(
+            metrics={"loss": state.log_history[-1].get("loss", 0), "step": state.global_step},
+            checkpoint=ray.train.Checkpoint.from_directory(checkpoint_dir),
+        )
 
 
 def train_func(config: dict):
@@ -168,6 +181,7 @@ def train_func(config: dict):
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         processing_class=tokenizer,
+        callbacks=[RayTrainReportCallback()],
     )
 
     train_result = trainer.train()
