@@ -89,21 +89,33 @@ Plus:
 
 ## Instance Types
 
-The default configuration (`num_workers: 8, num_gpus_per_worker: 1`) requires:
+### Default: 1 GPU (Qwen3-0.6B with LoRA)
+
+The default configuration uses a single worker. Qwen3-0.6B is a 0.6B parameter model, and LoRA only trains ~0.5% of parameters, so it fits comfortably on 1 GPU. Any single-GPU instance works:
 
 | Role | Instance | Count | Why |
 |------|----------|-------|-----|
-| Workers | `g5.16xlarge` | 8 | 1 A10G GPU, 64 vCPU, 256 GiB each |
+| Worker | Any GPU instance (`g5.xlarge`+) | 1 | 1 GPU is enough for 0.6B + LoRA |
 | Head / System | `m5.2xlarge` or similar | 1 | No GPU needed |
 
-Alternative configurations:
+### Scaling Up for Larger Models
 
-| Instance | GPUs/node | Workers needed | args.yaml changes |
-|----------|-----------|----------------|-------------------|
-| `g5.12xlarge` | 4 | 2 | `num_workers: 2, num_gpus_per_worker: 4` |
-| `g5.48xlarge` | 8 | 1 | `num_workers: 1, num_gpus_per_worker: 8` |
-| `g6.12xlarge` | 4 L4 | 2 | `num_workers: 2, num_gpus_per_worker: 4` |
-| `p4d.24xlarge` | 8 A100 | 1 | `num_workers: 1, num_gpus_per_worker: 8` |
+For models that don't fit on a single GPU (7B+), or for faster training on large datasets, increase `num_workers` in `args.yaml`. FSDP shards the model across workers.
+
+| Model Size | Recommended | args.yaml changes |
+|------------|-------------|-------------------|
+| < 3B (e.g., Qwen3-0.6B) | 1 GPU | Default — `num_workers: 1` |
+| 7B–13B | 2–4 GPUs | `num_workers: 4` |
+| 30B–70B | 8+ GPUs | `num_workers: 8` |
+
+Multi-GPU instance options:
+
+| Instance | GPUs/node | args.yaml changes |
+|----------|-----------|-------------------|
+| `g5.16xlarge` | 1 A10G | `num_workers: N` across N nodes |
+| `g5.12xlarge` | 4 A10G | `num_workers: 4, num_gpus_per_worker: 4` on 1 node |
+| `g5.48xlarge` | 8 A10G | `num_workers: 8, num_gpus_per_worker: 8` on 1 node |
+| `p4d.24xlarge` | 8 A100 | `num_workers: 8, num_gpus_per_worker: 8` on 1 node |
 
 ## Quick Start
 
