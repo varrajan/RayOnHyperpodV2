@@ -13,7 +13,7 @@ from typing import Optional
 import torch
 import ray
 from ray.train.torch import TorchTrainer
-from ray.train import ScalingConfig, RunConfig, CheckpointConfig
+from ray.train import ScalingConfig, RunConfig, CheckpointConfig, FailureConfig
 
 from transformers import (
     AutoModelForCausalLM,
@@ -206,6 +206,7 @@ def main(config_path: str = "args.yaml"):
     num_workers = config.get("num_workers", 8)
     num_gpus_per_worker = config.get("num_gpus_per_worker", 1)
     use_gpu = config.get("use_gpu", True)
+    max_failures = config.get("max_failures", 3)
 
     os.makedirs(script_args.checkpoint_dir, exist_ok=True)
     os.makedirs(script_args.output_dir, exist_ok=True)
@@ -221,6 +222,9 @@ def main(config_path: str = "args.yaml"):
         storage_path="/mnt/fsx/ray_results",
         checkpoint_config=CheckpointConfig(
             num_to_keep=3,
+        ),
+        failure_config=FailureConfig(
+            max_failures=max_failures,
         ),
     )
 

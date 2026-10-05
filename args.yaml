@@ -5,6 +5,9 @@ num_workers: 8
 num_gpus_per_worker: 1
 use_gpu: true
 
+# Resilience — HyperPod auto-recovers failed nodes; FailureConfig retries the job
+max_failures: 3
+
 # Model & data
 script_args:
   model_id: "Qwen/Qwen3-0.6B"

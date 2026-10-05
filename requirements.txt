@@ -14,4 +14,5 @@ torch>=2.4.0
 pyyaml
 psutil
 nvidia-ml-py
-sagemaker>=2.232.0
+toolkit-for-ray-on-sagemaker-ai
+amzn-sagemaker-checkpointing
