@@ -38,7 +38,7 @@ HyperPod EKS Cluster
 
 | File | Description |
 |------|-------------|
-| `notebook-s3_withoutputs.ipynb` | 14-step walkthrough: cluster setup → training → **Ray Serve deployment** → cleanup. Includes cell outputs from a successful run |
+| `notebook-s3.ipynb` | 14-step walkthrough: cluster setup → training → **Ray Serve deployment** → cleanup |
 | `train_ray_s3.py` | Training script — downloads data from S3 to local disk, trains with LoRA, uploads final model to S3. Heavy ML imports deferred to workers so the CPU head node stays lightweight |
 | `args-s3.yaml` | Training config — `s3_base_uri` replaces FSx paths, local `/tmp` dirs for worker-local storage |
 | `requirements-s3.txt` | Minimal dependency list — omits Ray and PyTorch (reuses the SageMaker Distribution image versions) |
@@ -107,7 +107,7 @@ Multi-GPU instance options:
 3. Create a JupyterLab space and attach it to the Ray cluster
 4. Open the notebook in the workspace and follow the steps:
    - **FSx variant**: `notebook.ipynb`
-   - **S3 variant**: `notebook-s3_withoutputs.ipynb`
+   - **S3 variant**: `notebook-s3.ipynb`
 
 ## Remote Job Submission
 
